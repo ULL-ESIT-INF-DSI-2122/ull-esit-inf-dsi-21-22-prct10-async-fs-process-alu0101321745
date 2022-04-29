@@ -249,6 +249,96 @@ export class FileNoPipe extends FileManagement {
     }
 }
 ```
+### Pruebas:
+```ts
+import 'mocha';
+import {expect} from 'chai';
+import { FileManagement } from "../src/Ej2/FileManagement";
+import { FilePipe } from "../src/Ej2/FilePipe";
+import { FileNoPipe } from "../src/Ej2/FileNoPipe";
+
+describe('Pruebas del ejercicio 2:', () => {
+    const filePipe = new FilePipe('hola.txt', 'hola');
+    const fileNoPipe = new FileNoPipe('hola.txt', 'hola');
+    it('Los ficheros son instancias de File Management:', () => {
+        expect(filePipe).to.be.instanceOf(FileManagement);
+        expect(fileNoPipe).to.be.instanceOf(FileManagement);
+    });
+    it('FilePipe es instancia de su clase:', () => {
+        expect(filePipe).to.be.instanceOf(FilePipe);
+    });
+    it('FileNoPipe es instancia de su clase:', () => {
+        expect(fileNoPipe).to.be.instanceOf(FileNoPipe);
+    });
+    it('Ambas clases cuentan 4 holas en el fichero de texto.:', () => {
+        expect(filePipe.management()).to.be.eql(undefined);
+        expect(fileNoPipe.management()).to.be.eql(undefined);
+    });
+});
+```
 
 ## **Ejercicio 3:**
+
+
+Para este ejercicio desarrollamos una clase Watcher que se encargará de gestionar los eventos sobre el directorio de un usuario.
+
+Dicho usuario será pasado por parámetro al constructor de la clase que se encargará de invocar al método para comprobar los cambios dentro del directorio del usuario, el código propuesto es el siguiente:
+
+```ts
+import * as fs from 'fs';
+/**
+ * Clase watcher que notificará los cambios sobre las notas de un usuario.
+ * @param name : Nombre del usuario.
+ * @method watchDir : Se encargará de gesitonar todo lo referente a los eventos del watcher correspondiente.
+ * @method checkDir : Cada vez que se llame esta función se encargará de comprobar que existe el directorio del usuario.
+ */
+export class Watcher {
+    constructor(private name: string) {
+        this.watchDir();
+    }
+    watchDir() {
+        let check = this.checkDir(this.name);
+        if (check) {
+            console.log(`Esperando por un evento`);
+            const watcher = fs.watch(`/home/usuario/Informes practicas/P10/src/Ej3/usuarios/${this.name}`);
+            watcher.on('change', (eventType, filename) => {
+                switch (eventType) {
+                    case 'rename':
+                        check = this.checkDir(filename.toString());
+                        if (check) {
+                            console.log(`Nota ${filename} añadida.`);
+                        } else {
+                            console.log(`Nota ${filename} borrada.`);
+                        }
+                        break;
+                    case 'change':
+                        console.log(`Nota ${filename} modificada.`);
+                        break;
+                }
+                console.log(`Esperando por un evento`);
+            });
+            return;
+        } else {
+            console.log('Error no existe el usuario especificado.');
+            return -1;
+        }
+    }
+    checkDir(name: string): boolean {
+        try {
+            fs.accessSync(`/home/usuario/Informes practicas/P10/src/Ej3/usuarios/${name}`, fs.constants.F_OK);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+}
+```
+
+De este ejercicio no se crearán pruebas ya que el usuario debe interactuar con las diferentes notas.
+
+- ¿Cómo haría para mostrar, no solo el nombre, sino también el contenido del fichero, en el caso de que haya sido creado o modificado: Se leería el contenido del fichero con la llamada `fs.ReadFile()` y se imprimiría por pantalla con un `console.log()`
+
+- ¿Cómo haría para que no solo se observase el directorio de un único usuario sino todos los directorios correspondientes a los diferentes usuarios de la aplicación de notas?: Se realizaría el watch sobre el directorio de usuario directamente utilizando los callbacks de la función `fs.watch()` para saber que ficheros se modifican y notificarlo por consola al usuario.
+
+## **Ejercicio 4:**
 
