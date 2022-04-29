@@ -348,3 +348,99 @@ De este ejercicio no se crearán pruebas ya que el usuario debe interactuar con 
 
 ## **Ejercicio 4:**
 
+Estándares a cumplir:
+1. Dada una ruta concreta, mostrar si es un directorio o un fichero.
+> Para esto se usa la función `fs.access()` junto con las constantes `constants.O_DIRECTORY`. Un ejemplo de dicha funcionalidad sería la siguiente:
+```ts
+function Comprobar(ruta: string): boolean | err {
+  fs.access(ruta, (err) => {
+    if (err) {
+      console.log(`Error, no existe el directorio o archivo indicado`);
+      return err;
+    } else {
+      fs.open(ruta, fs.constants.O_DIRECTORY, (err) => {
+        if (err) {
+          console.log(`El archivo es un fichero`);
+          return false;
+        } else {
+          console.log(`\El archivo es un directorio`);
+          return true;
+        }
+      });
+    }
+  });
+}
+```
+2. Crear un > Hay dos formas de hacerlo, o usamos `spawn` con rm o usamos `fs.unlink(path)`nuevo directorio a partir de una nueva ruta que recibe como parámetro.
+> Para realizar esto solo hay que usar las funcionalidades `fs.access()` y `fs.mdkir()`, un ejemplo sería el siguiente:
+```ts
+function CrearDirectorio(ruta: string) {
+  fs.access(ruta, (err) => {
+    if (!err) {
+      console.log(`Error, el directorio ya existe`);
+    } else {
+      fs.mkdir(ruta, (err) => {
+        if (err) {
+          console.log(`Error, no se ha podido crear el directorio, porfavor revise la ruta especificada`);
+        } else {
+          console.log(`Directorio creado`);
+        }
+      });
+    }
+  });
+}
+```
+3. Listar los ficheros dentro de un directorio.
+> Para esto solo hace falta comprobar que la ruta exista y que sea un directorio. Una vez tenemos la certeza de que la ruta y directorio existen solo hace falta el uso de `spawn` para hacer el comando `ls`.
+```ts
+function listar(ruta: string) {
+  if(Comprobar(ruta)) {
+      const ls = spawn('ls', [ruta]);
+      ls.stdout.pipe(process.stdout);
+  } else {
+    console.log(`La ruta especificada es incorrecta, no existe o no es un directorio`);
+  }
+}
+```
+4. Mostrar el contenido de un fichero (similar a ejecutar el comando cat).
+> Para ello usaremos la función spawn para hacer el uso de cat y mediante sus manejadores simularlo por consola:
+```ts
+function mostrarContenido(ruta: string) {
+  fs.access(ruta, (err) => {
+    if (err) {
+      console.log(`No existe el fichero.`);
+    } else {
+      fs.open(ruta, fs.constants.O_DIRECTORY, (err) => {
+        if (err) {
+          const cat = spawn('cat', [ruta]);
+          cat.stdout.pipe(process.stdout);
+        } else {
+          console.log(`La ruta indicada es un directorio, no se puede mostrar su contenido.`);
+        }
+      });
+    }
+  });
+}
+```
+5. Borrar ficheros y directorios.
+> Hay dos formas de hacerlo, o usamos `spawn` con rm o usamos `fs.unlink(path)`.
+6. Mover y copiar ficheros y/o directorios de una ruta a otra. Para este caso, la aplicación recibirá una ruta origen y una ruta destino. En caso de que la ruta origen represente un directorio, se debe copiar dicho directorio y todo su contenido a la ruta destino.
+> Para realizar este ejercicio haremos uso del siguiente código:
+
+```ts
+function Copy(rutaOrigen: string, rutaDestino: string) {
+  fs.access(`${rutaOrigen}`, (err) => {
+    if (err) {
+      console.log(`No existe el fichero`);
+    } else {
+      fs.copyFile(rutaOrigen, rutaDestino, (err) => {
+        if (err) {
+          console.log(`Error copiando el archivo, revise las rutas.`);
+        } else {
+          console.log(`Archivo copiado satisfactoriamente.`);
+        }
+      });
+    }
+  });
+}
+```
